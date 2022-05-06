@@ -1,42 +1,72 @@
+#ifndef HUFFMAN_H_
+#define HUFFMAN_H_
+
 #include <iostream>
 #include <queue>
 #include <memory>
 #include <fstream>
+#include <array>
 #include <unordered_map>
+#include <string>
 
-typedef std::unordered_map<uint8_t, uint32_t>::iterator map_it_t;
-typedef std::unique_ptr<struct Node> Node_ptr;
-typedef std::priority_queue<Node_ptr, std::vector<Node_ptr>, struct Node_cmp>
-		Huffman_tree;
-struct Node {
-	uint8_t val;
-	uint32_t count;
-	Node_ptr left;
-	Node_ptr right;
+class Huffman {
+public:
+	Huffman();
+	
+	void compress(std::ifstream &input_file);
 
-	//constructor for the occurence map
-	Node(const uint8_t &_val, const uint32_t &_count)
-			: val(_val), count(_count)
-	{}
+private:
+	typedef std::array<uint32_t, 256> HashMap;
+	HashMap occurence_map;
 
-	//constructor of artificial Nodes
-	Node(Node *const first, Node *const second)
-			: val('*'), count(first->count + second->count)
-	{}
+	typedef std::unordered_map<uint8_t, std::string> Dictionary;
+	Dictionary dic;
 
+	struct Node {
+		Node(uint8_t c_, uint32_t count_) : c(c_), count(count_) {}
+		
+		Node(std::shared_ptr<Node> left_, std::shared_ptr<Node> right_) :
+			 	c(0),
+				count(left_->count + right_->count),
+			 	left(left_),
+				right(right_) {}
+
+		uint8_t c;
+		uint32_t count;
+		std::shared_ptr<Node> left;
+		std::shared_ptr<Node> right;
+	};
+	
+	struct Node_cmp {
+		bool operator()(const std::shared_ptr<Node> &left,
+						const std::shared_ptr<Node> &right);
+	};
+
+	typedef std::priority_queue<std::shared_ptr<Node>,
+						std::vector<std::shared_ptr<Node>>,
+						Node_cmp> Queue;
+	Queue q;
+
+	void generate_map(std::ifstream &input_file);
+
+	void generate_queue();
+
+	void generate_tree();
+
+	void generate_dictionary(
+			const Node *node_ptr,
+			const std::string path);
 };
 
-//creating a custom comparator for 
-struct Node_cmp {
-	bool operator()(const Node_ptr &left,
-					const Node_ptr &right) {
-		if (left->count < right->count)
-			return false;
-		return true;
-	}
-};
 
-void generate_map_from_file(
-		std::unordered_map<uint8_t, uint32_t> &map,
-		std::ifstream &input_file);
+//creating a custom comparator for priority queue
+bool Huffman::Node_cmp::operator()(
+		const std::shared_ptr<Node> &left,
+		const std::shared_ptr<Node> &right) {
+	if (left->count < right->count)
+		return false;
+	return true;
+}
+
+#endif
 
