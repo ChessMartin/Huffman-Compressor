@@ -38,8 +38,9 @@ private:
 	};
 	
 	struct Node_cmp {
-		bool operator()(const std::shared_ptr<Node> &left,
-						const std::shared_ptr<Node> &right);
+		bool operator()(
+				const std::shared_ptr<Node> &left,
+				const std::shared_ptr<Node> &right);
 	};
 
 	typedef std::priority_queue<std::shared_ptr<Node>,
