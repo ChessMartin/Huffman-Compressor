@@ -48,8 +48,9 @@ void Huffman::generate_tree() {
 		q.pop();
 		std::shared_ptr<Node> right = q.top();
 		q.pop();
-		std::shared_ptr<Node> new_node = std::make_shared<Node>(std::move(left),
-																std::move(right));
+		std::shared_ptr<Node> new_node = std::make_shared<Node>(
+				std::move(left),
+				std::move(right));
 		q.emplace(std::move(new_node));
 	}
 }
