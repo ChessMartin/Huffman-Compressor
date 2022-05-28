@@ -15,7 +15,6 @@
 
 #define to_digit(c) (c-'0')
 
-typedef std::unordered_map<uint8_t, std::string> Dictionary;
 typedef std::array<uint32_t, 256> HashMap;
 
 class Huffman {
@@ -34,7 +33,7 @@ private:
 
 	HashMap occurence_map;
 
-	Dictionary _dictionary;
+  std::unordered_map<uint8_t, std::string> _dictionary;
 
 	uint8_t nb_node;
 	struct Node;
@@ -48,7 +47,7 @@ private:
           std::shared_ptr<Node>,
 		      std::vector<std::shared_ptr<Node>>,
 		      Node_cmp
-      > Queue _q;
+      > _queue;
 
 //encrypting
 	void generate_map();
