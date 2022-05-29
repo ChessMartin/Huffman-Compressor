@@ -23,10 +23,11 @@ public:
           const std::string &out_path = "default.huf");
 
   ~Huffman();
-  
+
   void compress();
 
   void decompress();
+
 private:
   std::fstream input_file;
   std::fstream output_file;
@@ -65,6 +66,13 @@ private:
 
 //decrypting
   void recreate_tree();
+
+  void add_branch_rec(const std::shared_ptr<Node> &current_node,
+                      const uint8_t &c,
+                      const std::string &code,
+                      uint32_t depth);
+
+  std::string get_formated_path(const std::string &buffer);
 };
 
 struct Huffman::Node {
@@ -78,6 +86,7 @@ struct Huffman::Node {
 
   uint8_t c;
   uint32_t count;
+
   std::shared_ptr<Node> left;
   std::shared_ptr<Node> right;
 };
