@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <iostream>
+#include <bitset>
 
 #define HEAP_CAPACITY 512
 #define EMPTY_BUFFER 0
@@ -13,9 +15,9 @@ namespace huffman {
 using Node    = struct Node;
 using NodePtr = std::unique_ptr<Node>;
 
-enum clase Side {
-  kLeft  = 0,
-  kRight = 1
+enum class Side {
+  kLeft,
+  kRight
 };
 
 struct Node {
@@ -77,27 +79,50 @@ NodePtr PriorityQueue::pop() {
 }
 
 struct CodeBuffer {
-  static size_t get_buffer_index(size_t&& bit_index);
-
-  CodeBuffer(size_t&& code_len)
-      : code_size(code_len)
-      , batch(get_buffer_index(code_len), EMPTY_BUFFER)
+  CodeBuffer()
+      : code_size(0)
+      , batch({EMPTY_BUFFER})
   {}
 
-  void push_bit(size_t&& bit_index);
+  CodeBuffer(CodeBuffer const& code_buffer)
+      : code_size(code_buffer.code_size)
+      , batch(code_buffer.batch)
+  {}
+
+  void insert_bit(size_t bit_index);
+  void display();
+
+  static size_t get_batch_index(size_t bit_index);
+  static size_t get_byte_index(size_t bit_index);
 
   size_t code_size;
   std::vector<uint8_t> batch;
 };
 
-inline size_t&& CodeBuffer::get_buffer_index(size_t&& bit_index) {
-  return std::move( bit_index % (BYTE_SIZE - 1) == 0
-                  ? bit_index /  BYTE_SIZE
-                  : bit_index /  BYTE_SIZE + 1);
+void CodeBuffer::insert_bit(size_t bit_index) {
+  if (get_batch_index(bit_index) >= batch.size())
+    batch.emplace_back(EMPTY_BUFFER);
+
+  batch.at(get_batch_index(bit_index))
+      |= (1 << get_byte_index(bit_index));
+  
+  ++code_size;
 }
 
-void CodeBuffer::push_bit(size_t&& bit_index) {
-  batch.at(get_buffer_index(bit_index)) |= 1 << bit_index;
+inline size_t CodeBuffer::get_batch_index(size_t bit_index) {
+  return bit_index / BYTE_SIZE;
+}
+
+inline size_t CodeBuffer::get_byte_index(size_t bit_index) {
+  return bit_index % BYTE_SIZE;
+}
+
+void CodeBuffer::display() {
+  for (uint8_t b : batch) {
+    std::bitset<8> b_set {b};
+    std::cout << b_set << " ";
+  }
+  std::cout << std::endl;
 }
 }//namespace
 

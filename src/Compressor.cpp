@@ -22,7 +22,7 @@ void Compressor::run(std::string const& infile_path,
 
   //generate priority queue from occurence map
   for (size_t key = 0; key < _occurence_map.size(); key++) {
-    uint8_t value = _occurence_map.at(key);
+    uint64_t value = _occurence_map.at(key);
     if (value > 0) {
       _queue.push(std::move(std::make_unique<Node>(key, value)));
     }
@@ -39,24 +39,32 @@ void Compressor::run(std::string const& infile_path,
   _tree = _queue.pop();
 
   //generate dictionary recursively throughout the tree
-  generate_dictionary(_tree, TREE_TOP_INDEX);
+  CodeBuffer code_buffer{};
+  generate_dictionary(_tree, code_buffer,
+                      TREE_TOP_INDEX, Side::kLeft);
+  for (auto &el : _dictionary) {
+    el.second.display();
+  }
 }
 
-void Compressor::generate_dictionary(NodePtr const&  node_ptr,
-                                     size_t  const&& depth,
-                                     Side    const&& side) {
+void Compressor::generate_dictionary(NodePtr const& node_ptr,
+                                     CodeBuffer     code_buffer,
+                                     int     const  depth,
+                                     Side    const  side) {
   if (node_ptr == nullptr)
     return;
 
-  if (node_ptr->c != NULL_CHAR && depth > TREE_TOP_INDEX) {
-    auto code_buffer = CodeBuffer(node_ptr->depth);
-    for (size_t i = 0; i < code_buffer.bit_size; i++) {
-      code_buffer.push(CodeBuffer::get_buffer_index(index));
-    }
+  if (side == Side::kRight)
+    code_buffer.insert_bit(unsigned(depth));
+
+  if (node_ptr->c != NULL_CHAR) {
+    _dictionary.emplace(node_ptr->c, code_buffer);
   }
 
-  generate_dictionary(node_ptr->left, depth + 1);
-  generate_dictionary(node_ptr->right, depth + 1);
+  generate_dictionary(node_ptr->left, code_buffer,
+                      depth + 1, Side::kLeft);
+  generate_dictionary(node_ptr->right, code_buffer,
+                      depth + 1, Side::kRight);
 }
 }//namespace
 
