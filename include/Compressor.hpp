@@ -6,8 +6,6 @@
 #include <array>
 #include <string>
 
-#define TREE_TOP_INDEX -1
-
 namespace huffman {
 using CharMap    = std::array<uint64_t, 256>;
 using Dictionary = std::unordered_map<uint8_t, CodeBuffer>;
@@ -25,10 +23,10 @@ class Compressor {
     NodePtr       _tree;
     Dictionary    _dictionary;
 
-    void generate_dictionary(NodePtr const& node_ptr,
-                             CodeBuffer     code_buffer,
-                             int     const  depth,
-                             Side    const  side);
-};
+  void generate_dictionary(NodePtr const& node_ptr,
+                           batch_t const  batch,
+                           size_t  const  depth,
+                           Side    const  side);
+  };
 }//namespace
 
